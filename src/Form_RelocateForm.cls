@@ -41,7 +41,7 @@ On Error GoTo ErrHandler
       If CDate(rD) <= Date Then
          Forms("UpdateСклад").relocationDateTextBox.SetFocus
          Forms("UpdateСклад").relocationDateTextBox.Locked = False
-         Forms("UpdateСклад").relocationDateTextBox.Text = rD
+'         Forms("UpdateСклад").relocationDateTextBox.Text = rD
          Forms("UpdateСклад").relocationDateTextBox.Locked = True
       Else
          MsgBox "Введите дату не позднее текущей!", vbExclamation, strMsgBox
@@ -69,7 +69,7 @@ On Error GoTo ErrHandler
    If reason <> "" Then
       Forms("UpdateСклад").reasonComboBox.SetFocus
       Forms("UpdateСклад").reasonComboBox.Locked = False
-      Forms("UpdateСклад").reasonComboBox.Text = reason
+      'Forms("UpdateСклад").reasonComboBox.Text = reason
       Forms("UpdateСклад").reasonComboBox.Locked = True
    Else
       MsgBox "Отсутствует основание перемещения", vbExclamation, strMsgBox
@@ -81,7 +81,7 @@ On Error GoTo ErrHandler
    If state <> "" Then
       Forms("UpdateСклад").stateComboBox.SetFocus
       Forms("UpdateСклад").stateComboBox.Locked = False
-      Forms("UpdateСклад").stateComboBox.Text = state
+      'Forms("UpdateСклад").stateComboBox.Text = state
       Forms("UpdateСклад").stateComboBox.Locked = True
    Else
       MsgBox "Отсутствует состояние при перемещении", vbExclamation, strMsgBox

@@ -67,7 +67,12 @@ Dim rst As Recordset
    rlNumber = 0
    ' сброс значения переменной для хранения строки - места назначения перемещаемого ТМЦ
    rlStr = ""
-      
+   
+Exit Sub
+ErrHandler:
+   MsgBox "Ошибка #: " & Err.number & vbCrLf & vbCrLf & Err.Description & " Form_AfterUpdate()"
+   Resume Next
+    
 End Sub 'Form_AfterUpdate
 'выполнение проверки перед обновлением записи
 Private Sub Form_BeforeUpdate(Cancel As Integer)
