@@ -2,8 +2,23 @@
 <project version="4">
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/src/Form_Authorization.cls" charset="windows-1251" />
+    <file url="file://$PROJECT_DIR$/src/Form_EditForm.cls" charset="windows-1251" />
+    <file url="file://$PROJECT_DIR$/src/Form_InsertСклад.cls" charset="windows-1251" />
+    <file url="file://$PROJECT_DIR$/src/Form_InsertСкладOld.cls" charset="windows-1251" />
+    <file url="file://$PROJECT_DIR$/src/Form_InvGlossary.cls" charset="windows-1251" />
+    <file url="file://$PROJECT_DIR$/src/Form_MaxLimitsGlossary.cls" charset="windows-1251" />
+    <file url="file://$PROJECT_DIR$/src/Form_MinLimitsGlossary.cls" charset="windows-1251" />
+    <file url="file://$PROJECT_DIR$/src/Form_NamesGlossary.cls" charset="windows-1251" />
+    <file url="file://$PROJECT_DIR$/src/Form_ReductForm.cls" charset="windows-1251" />
     <file url="file://$PROJECT_DIR$/src/Form_RelocateForm.cls" charset="windows-1251" />
+    <file url="file://$PROJECT_DIR$/src/Form_TypesGlossary.cls" charset="windows-1251" />
     <file url="file://$PROJECT_DIR$/src/Form_UpdateСклад.cls" charset="windows-1251" />
+    <file url="file://$PROJECT_DIR$/src/Form_ViewСклад.cls" charset="windows-1251" />
+    <file url="file://$PROJECT_DIR$/src/clsAuthorizationClass.cls" charset="windows-1251" />
+    <file url="file://$PROJECT_DIR$/src/clsRelocateClass.cls" charset="windows-1251" />
+    <file url="file://$PROJECT_DIR$/src/clsSelectRecordClass.cls" charset="windows-1251" />
+    <file url="file://$PROJECT_DIR$/src/clsSessionsClass.cls" charset="windows-1251" />
     <file url="file://$PROJECT_DIR$/src/clsTreeClass.cls" charset="windows-1251" />
+    <file url="file://$PROJECT_DIR$/src/main.bas" charset="windows-1251" />
   </component>
 </project>
