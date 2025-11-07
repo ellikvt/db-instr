@@ -125,8 +125,19 @@ On Error GoTo ErrHandler
 
    ' источником данных формы становится модифицированный запрос,
    ' который ворачивает только определенные записи из всего набора InsertСклад
-   Me.RecordSource = queryString
+   If queryString <> "-1" Then
+      Me.RecordSource = queryString
+   Else
+      DoCmd.Close acForm, "EditForm"
+      Exit Sub
+   End If
    ' инициализация переменных для хранения данных журнала редактирования аттрибутов
+   
+   Me.classComboBox.SetFocus
+   If classComboBox.Text Like "*редства*змерени*" Then
+      Call Metrological(True)
+   End If
+   
    Call VarsBefore
    
    ' вызов процедуры инициализации источника данных элемента управления "Измерямая величина"
@@ -163,6 +174,7 @@ Private Sub invGlossaryButton_Click()
    Инв_номер_Код.Requery
 
 End Sub 'invGlossaryButton_Click
+
 'нажатие кнопки Макс. шкалы
 Private Sub maxLimitsGlossaryButton_Click()
 
@@ -334,23 +346,36 @@ Private Sub VarsBefore()
    Else
    End If
    
-   be_meas_param_id = meas_param_id.value
-   be_exec_funct_id = exec_funct_id.value
+   ' the values marked with n/a below are not implemented due to the design break.
+   ' the respective nullTbl that contains them is not related with other data in DB schema
+   ' # n/a
+   'be_meas_param_id = meas_param_id.value
+   'be_exec_funct_id = exec_funct_id.value
    Примечание_Код.SetFocus
    be_notes = Примечание_Код.Text
-   be_class_id = Класс_ТМЦ.value
-   be_meas_unit_id = meas_unit_id.value
-   be_min_limit_id = min_limit_id.value
-   be_max_limit_id = max_limit_id.value
-   be_accuracy_grade_id = accuracy_grade_id.value
-   
-   verification_date_TextBox.SetFocus
-   If verification_date_TextBox.Text <> "" Then
-      be_verification_date = CDate(verification_date_TextBox.Text)
-   Else
+   be_class_id = Me.classComboBox.value
+   If Me.unit_nameComboBox.Enabled = True Then
+      If Me.unit_nameComboBox.value <> "" Then
+        be_meas_unit_id = Me.unit_nameComboBox.value
+      End If
+      If Me.minLimitsComboBox.value <> "" Then
+        be_min_limit_id = Me.minLimitsComboBox.value
+      End If
+      If Me.maxLimitsComboBox.value <> "" Then
+        be_max_limit_id = Me.maxLimitsComboBox.value
+      End If
+      If Me.accuracy_grade_ComboBox.value <> "" Then
+        be_accuracy_grade_id = Me.accuracy_grade_ComboBox.value
+      End If
+      
+      verification_date_TextBox.SetFocus
+         If verification_date_TextBox.Text <> "" Then
+            be_verification_date = CDate(verification_date_TextBox.Text)
+            be_pov_interval_id = Me.pov_interval_ComboBox.value
+         Else
+         End If
    End If
    
-   be_pov_interval_id = pov_interval_id.value
    be_id = Код_ТМЦ.value
    
 End Sub ' VarsBefore

@@ -24,6 +24,7 @@ Private Sub Form_Load()
    recordsNumberTextBox.Text = rl.recsCount
    recordsNumberTextBox.Locked = True
    relocationDateTextBox.SetFocus
+   relocationDateTextBox = Null
    
 End Sub 'Form_Load
 

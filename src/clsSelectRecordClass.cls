@@ -57,7 +57,13 @@ Dim rst As Recordset, oneId As Boolean
          serNumPribor = ""
       End If
       'запись идентификатора положения прибора в структуре в переменную
-      ID = Forms("ViewСклад").structure_idTextBox.value
+      If Forms("ViewСклад").structure_idTextBox.value <> "" Then
+        ID = Forms("ViewСклад").structure_idTextBox.value
+      Else
+        MsgBox "ID = Null or current node doesn't contain items", vbCritical + vbOKOnly, strMsgBox
+        SelInsertQuery = "-1"
+        Exit Function
+      End If
       'условие что и тип, и зав. номер - не пустые
       If typePribor <> "" And serNumPribor <> "" Then
          Query = "SELECT Код_ТМЦ FROM UpdateСклад " _
@@ -155,3 +161,4 @@ Public Property Let ReasonText(ByVal vNewValue As Variant)
    reasonString = vNewValue
    
 End Property ' ReasonText
+
