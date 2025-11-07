@@ -19,7 +19,10 @@ And this causes the VBA Run-time Error 91 'Object Variable of With Block Variabl
 After that the Application stops proper responding on buttons clicks with the same VBA Run-time Error.  
 **bug:** If TreeCtl accessed by clicking rigth after the Relocate Form appeared then it causes the VBA Run-Time Error 91.  
 As a result the Form is not able to be closed without the code run break  
-**bug:** Relocate Form Date is not initialized by today date but initialized with some wrong '##' data instead  
+**bug:** ViewСклад Form not capable to refresh automatically on relocation the remaining last selected node item.  
+         This leads to Form stuck after relocation finished.  
+**bug:** Private Sub Form Load of Relocation Form contains Date field that is initialized with no proper '###' data on Form opening  
+**bug:** Forcing ViewСклад Form close affects the other users. To chekc if that can be solved by dividing the Front-end App and Database
 
 
 
