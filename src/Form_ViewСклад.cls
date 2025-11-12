@@ -545,11 +545,12 @@ Private Sub useReportButton_Click()
 
    'вывести запрос "UseReport" в Excel
    DoCmd.OutputTo acOutputQuery, "UseReport", acFormatXLSX, _
-      "Отчет по использованию ТМЦ за период с " & CStr(Date - 31) _
+      "Отчет по использованию ТМЦ " & ".xlsx" 'за период с " & CStr(Date - 31) _
       & " по " & CStr(Date) & ".xlsx"
    MsgBox "Отчет по использованию выведен в файл: Мои документы\" & _
-   "Отчет по использованию ТМЦ за период с " & CStr(Date - 31) _
-      & " по " & CStr(Date) & ".xlsx", vbInformation + vbOKOnly, strMsgBox
+   "Отчет по использованию ТМЦ " & ".xlsx", vbInformation + vbOKOnly, strMsgBox
+   'за период с " & CStr(Date - 31) _
+      & " по " & CStr(Date) & ".xlsx" ', vbInformation + vbOKOnly, strMsgBox
 
 End Sub 'useReportButton_Click
 'функция подготовки отчета по складу из шаблона запроса Warehouse
