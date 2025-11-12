@@ -10,7 +10,8 @@ Commissioning and Start-Up Instrumentation managing Database project
 **2025-11-07 update:** Binary File 0.0.2-bugs-#1,9-fixed to be used (pls see commit af30cba)  
 
 `**bug 1:** fixed` Error 424 on click with 'Учетная карта ТМЦ' button of the Main View  
-**bug 2:** Macro command Error on click with 'Открыть форму' button of the Main View  
+`**bug 2:** fixed` Macro command Error on click with 'Открыть форму' button of the Main View  
+( fixed in Binary File 0.0.2-bugs-#1,9-fixed by removing button related not correct macro command )  
 **bug 3:** Runtime Error 3085 on click with 'Отчет по использованию' button of the Main View  
 **bug 4:** Error of Date, Time required on click with 'Отчет по сессиям' of the Main View  
 **bug 5:** Error of Report Form positioning on the screen. After appear its close control might be not visible.  
