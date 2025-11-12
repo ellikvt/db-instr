@@ -15,7 +15,8 @@ Commissioning and Start-Up Instrumentation managing Database project
 ( fixed in Binary File 0.0.2-bugs-#1,9-fixed by removing button related not correct macro command )  
 `**bug 3:** fixed` Runtime Error 3085 on click with 'Отчет по использованию' button of the Main View  
 couldn't resolve the statement >(Date()-365) And <=Date() and it was deleted. Now the use report assume just the whole time  
-**bug 4:** Error of Date, Time required on click with 'Отчет по сессиям' of the Main View  
+**bug 4:** Error of Date, Time required on click with 'Отчет по сессиям' of the Main View. Also ## in name field of the report.  
+And the Report Form to be positioned at tne center of the screen. Now the Form is unaccessible to close
 **bug 5:** Error of Report Form positioning on the screen. After appear its close control might be not visible.  
 Access restoring only after client reconnect to the VM  
 **bug 6:** TreeCtl Access Error on click 'Добавить пути из дерева' button of the Main View.  
