@@ -8,7 +8,7 @@ Commissioning and Start-Up Instrumentation managing Database project
 'Информатор КИП v0.0.2_2014-11-17' on the reason of modified code  
 (pls see commit 9b9598cfce89b48c10c1fe10b398e75de6eddefa)  
 **2025-11-07 update:** Binary File 0.0.2-bugs-#1,9-fixed to be used (pls see commit af30cba)  
-**2025-11-12 update:** Binary File 0.0.3 to be used (pls see commit)
+**2025-11-12 update:** Binary File 0.0.3 to be used (pls see commit about bug 3 fix)
 
 `**bug 1:** fixed` Error 424 on click with 'Учетная карта ТМЦ' button of the Main View  
 `**bug 2:** fixed` Macro command Error on click with 'Открыть форму' button of the Main View  
