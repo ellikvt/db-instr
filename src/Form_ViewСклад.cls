@@ -455,8 +455,8 @@ Private Sub saveAsuReportAsPdfButton_Click()
 On Error GoTo ErrorHandler
 
    DoCmd.OutputTo acOutputReport, "AsuReport", _
-      acFormatPDF, "ЗИП и склад ТМЦ АСУ" & CStr(Date) & ".pdf", True
-   MsgBox "Бланк выведен в 'Мои документы/ЗИП и склад ТМЦ АСУ" & CStr(Date) & ".pdf'", vbInformation + vbOKOnly, strMsgBox
+      acFormatRTF, "ЗИП и склад ТМЦ АСУ на " & CStr(Date) & ".rtf", True
+   MsgBox "Бланк выведен в 'Мои документы/ЗИП и склад ТМЦ АСУ на" & CStr(Date) & ".rtf'", vbInformation + vbOKOnly, strMsgBox
    
 Exit Sub
 

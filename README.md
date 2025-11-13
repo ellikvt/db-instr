@@ -65,6 +65,7 @@ And the Report Form to be positioned at tne center of the screen. Now the Form i
 that are related with Form positioning.  Default Window Mode is left.  
 The caption `Total qty of sessions registered` added also on the Report Form at the bottom.  
 The report exporting PDF forman replaced by RTF to get more Windows portability  
+Same is done regarding the ICSS report  
 **bug 5:** Error of Report Form positioning on the screen. After appear its close control might be not visible.  
 Access restoring only after client reconnect to the VM  
 **bug 6:** TreeCtl Access Error on click 'Добавить пути из дерева' button of the Main View.  
