@@ -52,15 +52,19 @@ Commissioning and Start-Up Instrumentation managing Database project
 'Информатор КИП v0.0.2_2014-11-17' on the reason of modified code  
 (pls see commit 9b9598cfce89b48c10c1fe10b398e75de6eddefa)  
 **2025-11-07 update:** Binary File 0.0.2-bugs-#1,9-fixed to be used (pls see commit af30cba)  
-**2025-11-12 update:** Binary File 0.0.3 to be used (pls see commit about bug 3 fix)
+**2025-11-12 update:** Binary File 0.0.3 to be used (pls see commit about bug 3 fix)  
+**2025-11-13 update:** Binary File 0.0.4 to be used (on the bug 4 fix)  
 
 `**bug 1:** fixed` Error 424 on click with 'Учетная карта ТМЦ' button of the Main View  
 `**bug 2:** fixed` Macro command Error on click with 'Открыть форму' button of the Main View  
 ( fixed in Binary File 0.0.2-bugs-#1,9-fixed by removing button related not correct macro command )  
 `**bug 3:** fixed` Runtime Error 3085 on click with 'Отчет по использованию' button of the Main View  
 couldn't resolve the statement >(Date()-365) And <=Date() and it was deleted. Now the use report assume just the whole time  
-**bug 4:** Error of Date, Time required on click with 'Отчет по сессиям' of the Main View. Also ## in name field of the report.  
-And the Report Form to be positioned at tne center of the screen. Now the Form is unaccessible to close
+`**bug 4:** fixed` Error of Date, Time required on click with 'Отчет по сессиям' of the Main View. - Date/Time textboxes removed due to not needed.  
+And the Report Form to be positioned at tne center of the screen. Now the Form is unaccessible to close - no options found for DoCmd.OpenReport  
+that are related with Form positioning.  Default Window Mode is left.  
+The caption `Total qty of sessions registered` added also on the Report Form at the bottom.  
+The report exporting PDF forman replaced by RTF to get more Windows portability  
 **bug 5:** Error of Report Form positioning on the screen. After appear its close control might be not visible.  
 Access restoring only after client reconnect to the VM  
 **bug 6:** TreeCtl Access Error on click 'Добавить пути из дерева' button of the Main View.  

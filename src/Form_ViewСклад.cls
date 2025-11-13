@@ -616,11 +616,11 @@ On Error GoTo ErrorHandler
 Dim Response As Integer
 
     DoCmd.OpenReport "sessionsReport", acViewReport, , , acDialog
-    Response = MsgBox("Следует ли вывести этот отчет в файл Acrobat Reader?", vbQuestion + vbYesNo, strMsgBox)
+    Response = MsgBox("Следует ли вывести этот отчет в файл Rich Text Format?", vbQuestion + vbYesNo, strMsgBox)
     If Response = vbYes Then
         DoCmd.OutputTo acOutputReport, "sessionsReport", _
-                       acFormatPDF, "Сессии" & CStr(Date) & ".pdf", True
-        MsgBox "Отчет выведен в 'Мои документы/Сессии" & CStr(Date) & ".pdf", vbInformation + vbOKOnly, strMsgBox
+                       acFormatRTF, "Отчет по сессиям на " & CStr(Date) & ".rtf", True
+        MsgBox "Отчет выведен в 'Мои документы/Отчет по сессиям на " & CStr(Date) & ".rtf", vbInformation + vbOKOnly, strMsgBox
     End If
    
 Exit Sub
