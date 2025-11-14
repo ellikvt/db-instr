@@ -23,8 +23,8 @@ End Sub 'cancelButton_Click
 Private Sub debugModeButton_Click()
 
    auth.setSubdiv ("Снежное")
-   auth.setLogin ("user8")
-   auth.setPassword ("user8")
+   auth.setLogin ("admin8")
+   auth.setPassword ("admin8")
    Forms("Authorization").Visible = False
    DoCmd.OpenForm "ViewСклад", acNormal, , , acFormAdd, acWindowNormal
 

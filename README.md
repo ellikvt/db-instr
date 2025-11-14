@@ -54,8 +54,9 @@ Commissioning and Start-Up Instrumentation managing Database project
 **2025-11-07 update:** Binary File 0.0.2-bugs-#1,9-fixed to be used (pls see commit af30cba)  
 **2025-11-12 update:** Binary File 0.0.3 to be used (pls see commit about bug 3 fix)  
 **2025-11-13 update:** Binary File 0.0.4 to be used (on the bug 4 fix)  
-**2025-11-14 update:** Binary File 0.0.5 to be used (on the bug 6 fix) 
-
+**2025-11-14 update:** Binary File 0.0.5 to be used (on the bug 6 fix)  
+**2025-11-14 update:** Binary File 0.0.6 to be used (on the bug 11 fix)  
+ 
 `**bug 1:** fixed` Error 424 on click with 'Учетная карта ТМЦ' button of the Main View  
 `**bug 2:** fixed` Macro command Error on click with 'Открыть форму' button of the Main View  
 ( fixed in Binary File 0.0.2-bugs-#1,9-fixed by removing button related not correct macro command )  
@@ -78,12 +79,18 @@ The detail reason is `Do Until rsMaster.EOF Then .. Loop` loop which never initi
 This leads to the error when trying to close non existing rsSlave on the export finish.  
 This option is not good to use by app users. The option to be switched off because such a DB structure proceed might to be waste of time when  
 doing with VBA. This is DB Admin main responsibility to make the proper structure operations.  
-**bug 7:** If TreeCtl accessed by clicking rigth after the Relocate Form appeared then it causes the VBA Run-Time Error 91.  
+`**bug 7:** fixed` If TreeCtl accessed by clicking rigth after the Relocate Form appeared then it causes the VBA Run-Time Error 91.  
 As a result the Form is not able to be closed without the code run break  
+It's exposed to be fixed already on the bugs # 1,2,3,4 clearing. Now the response of the TreeCtl is blocked by app on the relocation proceeding that is right response in fact.  
 **bug 8:** ViewСклад Form not capable to refresh automatically on relocation the remaining last selected node item.  
          This leads to Form stuck after relocation finished.  
 `**bug 9:** fixed` Private Sub Form Load of Relocation Form contains Date field that is initialized with no proper '###' data on Form opening  
-**bug 10:** Forcing ViewСклад Form close affects the other users. To chekc if that can be solved by dividing the Front-end App and Database
-
+**bug 10:** Forcing ViewСклад Form close affects the other users. To chekc if that can be solved by dividing the Front-end App and Database  
+`**bug 11:**` On Debug Button click with Auth Form the app get the `user8` credentials.  
+For the full debug it's not enough and credentials re-assigned with `admin8` that gives more expanded right to make operations in the app. 
+This is basically not the bug as it appears but need to be corrected for full debug abilities.  
+**bug 12:** If TreeCtl accessed by clicking rigth after the Relocate Form data given to the app by user and no choice is made regarding the destination ot relocation ( no node clicked in TreeCtl ) then the app generating not proper reply that need to be corrected.  
+The button `Сохранить изменения` shall not be activated until proper destination node is selected by user.   
+**bug 13:** The `` Form: the field `` is not properly indicating the fact of relocation instead of field ``  
 
 
