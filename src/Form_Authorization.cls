@@ -25,9 +25,19 @@ Private Sub debugModeButton_Click()
    auth.setSubdiv ("Снежное")
    auth.setLogin ("admin8")
    auth.setPassword ("admin8")
+   'экземпляр класса Recordset
+            Set rst = CurrentDb.OpenRecordset("SELECT Код " _
+               & "FROM Структура " _
+               & " WHERE Перевод LIKE '" _
+               & "*" & auth.getSubdiv & "*'" & "")
+   rst.MoveFirst
+   auth.setId (rst.Fields(0))
    Forms("Authorization").Visible = False
    DoCmd.OpenForm "ViewСклад", acNormal, , , acFormAdd, acWindowNormal
 
+   'clean
+   rst.Close
+   
 End Sub 'debugModeButton_Click
 
 Private Sub Form_Load()
@@ -126,6 +136,9 @@ Dim subDiv As String, login As String, password As String
    Else
       MsgBox "Выберите филиал", vbExclamation, strMsgBox
    End If
+   
+   ' cleaning
+   rst.Close
    
 End Sub 'okButton_Click
 

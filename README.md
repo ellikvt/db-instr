@@ -91,6 +91,6 @@ For the full debug it's not enough and credentials re-assigned with `admin8` tha
 This is basically not the bug as it appears but need to be corrected for full debug abilities.  
 **bug 12:** If TreeCtl accessed by clicking rigth after the Relocate Form data given to the app by user and no choice is made regarding the destination ot relocation ( no node clicked in TreeCtl ) then the app generating not proper reply that need to be corrected.  
 The button `Сохранить изменения` shall not be activated until proper destination node is selected by user.   
-**bug 13:** The `` Form: the field `` is not properly indicating the fact of relocation instead of field ``  
+**bug 13:** In the `` Form the field `` is not properly indicating the fact of relocation instead of field ``  
 
 
