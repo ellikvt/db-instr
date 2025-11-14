@@ -265,8 +265,12 @@ Dim pathArray(14) As String
    Loop
 
    'очистка
-   rsMaster.Close
-   rsSlave.Close
+   If rsMaster.EOF Then
+        rsMaster.Close
+        MsgBox "All nodes exported successfully", vbInformation + vbOKOnly, strMsgBox
+   Else
+        rsSlave.Close
+   End If
       
 Exit Sub
 ErrHandler:

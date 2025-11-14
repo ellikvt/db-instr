@@ -54,6 +54,7 @@ Commissioning and Start-Up Instrumentation managing Database project
 **2025-11-07 update:** Binary File 0.0.2-bugs-#1,9-fixed to be used (pls see commit af30cba)  
 **2025-11-12 update:** Binary File 0.0.3 to be used (pls see commit about bug 3 fix)  
 **2025-11-13 update:** Binary File 0.0.4 to be used (on the bug 4 fix)  
+**2025-11-14 update:** Binary File 0.0.5 to be used (on the bug 6 fix) 
 
 `**bug 1:** fixed` Error 424 on click with 'Учетная карта ТМЦ' button of the Main View  
 `**bug 2:** fixed` Macro command Error on click with 'Открыть форму' button of the Main View  
@@ -66,11 +67,17 @@ that are related with Form positioning.  Default Window Mode is left.
 The caption `Total qty of sessions registered` added also on the Report Form at the bottom.  
 The report exporting PDF forman replaced by RTF to get more Windows portability  
 Same is done regarding the ICSS report  
-**bug 5:** Error of Report Form positioning on the screen. After appear its close control might be not visible.  
-Access restoring only after client reconnect to the VM  
-**bug 6:** TreeCtl Access Error on click 'Добавить пути из дерева' button of the Main View.  
+`**bug 5:** fixed` Error of Report Form positioning on the screen. After appear its close control might be not visible.  
+Access restoring only after client reconnect to the VM  - no more this behaviour detected. It's exposed to be related with   
+the mistakes of reporting in the app that were fixed with bugs #1,2,3,4 handling  
+`**bug 6:** fixed` TreeCtl Access Error on click 'Добавить пути из дерева' button of the Main View.  
 And this causes the VBA Run-time Error 91 'Object Variable of With Block Variable not set'.  
 After that the Application stops proper responding on buttons clicks with the same VBA Run-time Error.  
+Bug is related with rsSlave recordset which doesn't exist on the nodes exporting end due to it's not initialized.
+The detail reason is `Do Until rsMaster.EOF Then .. Loop` loop which never initializing rsSlave recordset on rsMaster proceeding finish.  
+This leads to the error when trying to close non existing rsSlave on the export finish.  
+This option is not good to use by app users. The option to be switched off because such a DB structure proceed might to be waste of time when  
+doing with VBA. This is DB Admin main responsibility to make the proper structure operations.  
 **bug 7:** If TreeCtl accessed by clicking rigth after the Relocate Form appeared then it causes the VBA Run-Time Error 91.  
 As a result the Form is not able to be closed without the code run break  
 **bug 8:** ViewСклад Form not capable to refresh automatically on relocation the remaining last selected node item.  
