@@ -138,7 +138,7 @@ Dim subDiv As String, login As String, password As String
    End If
    
    ' cleaning
-   rst.Close
+   'rst.Close
    
 End Sub 'okButton_Click
 

@@ -383,8 +383,12 @@ Private Sub relocateButton_Click()
    rl.Inside
    rl.inRelocation = True
    DoCmd.OpenForm "UpdateСклад", , , , , acDialog
+   
    Me.Requery
-
+   If Me.Recordset.RecordCount = 0 Then
+         Me.RecordSource = "nullQuery"
+   End If
+ 
 End Sub 'relocateButton_Click
 'нажатие кнопки перемещения ТМЦ из структуры в буфер приборов
 Private Sub relocateToBufButton_Click()
@@ -393,9 +397,13 @@ Private Sub relocateToBufButton_Click()
    rl.InsideOut
    rl.insOutRelocation = True
    DoCmd.OpenForm "UpdateСклад", , , , , acDialog
+   
    Me.Requery
+   If Me.Recordset.RecordCount = 0 Then
+      Me.RecordSource = "nullQuery"
+   End If
    Me.subСкладUnnested.Requery
-
+   
 End Sub 'relocateToBufButton_Click
 
 'нажатие кнопки перемещения ТМЦ из буфера приборов в структуру

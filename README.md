@@ -85,11 +85,11 @@ doing with VBA. This is DB Admin main responsibility to make the proper structur
 `**bug 7:** fixed` If TreeCtl accessed by clicking rigth after the Relocate Form appeared then it causes the VBA Run-Time Error 91.  
 As a result the Form is not able to be closed without the code run break  
 It's exposed to be fixed already on the bugs # 1,2,3,4 clearing. Now the response of the TreeCtl is blocked by app on the relocation proceeding that is right response in fact.  
-**bug 8:** ViewСклад Form not capable to refresh automatically on relocation the remaining last selected node item.  
-         This leads to Form stuck after relocation finished.  
+`**bug 8:** fixed` ViewСклад Form not capable to refresh automatically on relocation the remaining last selected node item between   
+the structure nodes directly. This leads to Form stuck after relocation finished.  
 `**bug 9:** fixed` Private Sub Form Load of Relocation Form contains Date field that is initialized with no proper '###' data on Form opening  
 **bug 10:** Forcing ViewСклад Form close affects the other users. To chekc if that can be solved by dividing the Front-end App and Database  
-`**bug 11:**` On Debug Button click with Auth Form the app get the `user8` credentials.  
+`**bug 11:** fixed` On Debug Button click with Auth Form the app get the `user8` credentials.  
 For the full debug it's not enough and credentials re-assigned with `admin8` that gives more expanded right to make operations in the app. 
 This is basically not the bug as it appears but need to be corrected for full debug abilities.  
 **bug 12:** If TreeCtl accessed by clicking rigth after the Relocate Form data given to the app by user and no choice is made regarding the destination ot relocation ( no node clicked in TreeCtl ) then the app generating not proper reply that need to be corrected.  

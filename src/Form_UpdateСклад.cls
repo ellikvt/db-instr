@@ -2,276 +2,561 @@ VERSION 1.0 CLASS
 BEGIN
   MultiUse = -1  'True
 END
-Attribute VB_Name = "Form_ViewСклад"
+Attribute VB_Name = "Form_UpdateСклад"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Compare Database
+Option Explicit
+
+Dim targetRelocChanged As Boolean
+'объект, которому будет присвоен экземпляр класса clsTreeClass
 Dim tr As Object
+' переменная для хранения количества перемещенных ТМЦ (обнуляется после успешного перемещения)
+Dim rlNumber As Integer
+' переменная для хранения назначения строки-места назначения перемещаемого ТМЦ (обнуляется после успешного перемещения)
+Dim rlStr As String
+Dim clickCounter As Integer
+'объявление переменных хранения данных для исторической записи
+Dim rDate As Date 'дата перемещения
+Dim bRplace_id As Long 'код местонахождения до перемещения
+Dim brPersonal As String 'ответственный до перемещения
+Dim bRstate_id As Long 'код состояния до перемещения
+Dim bCclass_id As Long 'код класса ТМЦ до его смены
+Dim bRsession_id As Long 'код текущей сессии
+Dim bRreason_id As Long 'код причины до перемещения
+Dim someStr As String
+' нажатие кн. Выйти
+Private Sub closeButton_Click()
 
-'добавление нового узла
-Private Sub addNodeButton_Click()
+   DoCmd.Close acForm, "UpdateСклад"
+   
+End Sub ' closeButton_Click
 
-End Sub 'addNodeButton_Click
-'добавление нового ТМЦ
-Private Sub addRecordButton_Click()
-
-      DoCmd.OpenForm "InsertСклад", , , , , acDialog
-      Me.subСкладUnnested.Requery
-
-End Sub 'addRecordButton_Click
-
-'нажатие кнопки "Запрос приборов во всех узлах"
-Private Sub allQueryButton_Click()
+'обработка действий после обновления записи
+Private Sub Form_AfterUpdate()
 Dim rst As Recordset
 
-   Me.RecordSource = "SELECT * FROM Склад "
-   statusLabel.Caption = "Вывод ТМЦ всего дерева филиалов и организаций"
-   '"популяризация" источника данных формы
+   Forms("UpdateСклад").Requery
    Set rst = Me.Recordset
-   rst.MoveLast
-   rst.MoveFirst
-
-End Sub 'allQueryButton_Click
-'очистка бланка материального пропуска
-Private Sub clearPassBlankButton_Click()
-On Error GoTo ErrHandler
-
-   CurrentDb.Execute "DELETE * FROM passblank"
-   MsgBox "Бланк очищен!", vbInformation, strMsgBox
    
-Exit Sub
-ErrHandler:
-   MsgBox "Ошибка:" & Err.Description, vbCritical, "Очистка бланка"
-End Sub 'clearPassBlankButton_Click
-
-'нажатие копирования в макет матер. пропуска
-Private Sub copyToPassBlankButton_Click()
-On Error GoTo ErrHandler
-Dim rst As Recordset, serial As Byte, i As Byte, recordsCount As Byte
-     '  CurrentDb.Execute "CREATE TABLE passblank " _
-     '             & "(Наименование TEXT, " _
-     '             & "Тип TEXT, " _
-     '             & "[Зав номер] TEXT, " _
-     '             & "Количество LONG, " _
-     '             & "Местонахождение TEXT); "
-   Set rst = CurrentDb.OpenRecordset("SELECT Наименование FROM passblank")
-   If rst.EOF And rst.BOF Then
-      recordsCount = 0
-   Else
-      'populate the recordset
+   If rst.RecordCount = 0 Then 'если нет больше записей, т.е. все ТМЦ перемещены
+      MsgBox "Успешно перемещено " & rlNumber & " шт. ТМЦ данного типа и наименования" & vbCrLf _
+           & "по назначению: " & rlStr, vbInformation + vbOKOnly, strMsgBox
+      MsgBox "Все заданные перемещения обработаны!" & vbCrLf _
+           & "Форма перещений будет закрыта.", vbInformation + vbOKOnly, strMsgBox
+      DoCmd.Close acForm, "UpdateСклад", acSaveNo
+      rst.Close
+   Else                          'если не все ТМЦ перемещены
+      'снова блокируем поле Куда от случайных изменений
+      Куда_израсход_Код.Enabled = False
+      'populate the Recordset
       rst.MoveLast
-      rst.MoveFirst
-      recordsCount = rst.RecordCount
-   End If
-   If recordsCount < 3 Then
-      serial = recordsCount + 1
-      CurrentDb.Execute "INSERT INTO passblank ( Наименование,Тип,[Зав номер],Количество,Местонахождение,Номер ) VALUES" _
-                     & "('" & Наименование & _
-                      "','" & Тип & _
-                      "','" & Зав_номер & _
-                      "','" & Количество & _
-                      "','" & Местонахождение & _
-                      "','" & serial & "');"
-      MsgBox "ТМЦ скопировано!", vbInformation, strMsgBox
-   Else
-      MsgBox "В бланке уже 3 ТМЦ. Распечатайте бланк," _
-         & "очистите его и заполните новый.", vbExclamation, strMsgBox
+      'обновить глобальную переменную, содержащую количество записей формы
+      rl.recsCount = rst.RecordCount
+      'снова очистить поле "Количество" в группе "Сведения о перемещении"
+      relocNumberTextBox.value = ""
+      ' активируем кнопку "Начало перемещения"
+      Me.relocateButton.Enabled = True
+      MsgBox "Успешно перемещено " & rlNumber & " шт. ТМЦ данного типа и наименования" & vbCrLf _
+           & "по назначению: " & rlStr, vbInformation + vbOKOnly, strMsgBox
    End If
    
-   rst.Close
+   ' сброс значения переменной для хранения количества перемещенных ТМЦ в нуль
+   rlNumber = 0
+   ' сброс значения переменной для хранения строки - места назначения перемещаемого ТМЦ
+   rlStr = ""
+   
 Exit Sub
 ErrHandler:
-   MsgBox "Ошибка:" & Err.Description, vbCritical, strMsgBox
-   rst.Close
-End Sub 'copyToPassBlankButton_Click
-
-' нажатие "Удалить текущее ТМЦ" (из буфера)
-Private Sub deleteFromBufferButton_Click()
+   MsgBox "Ошибка #: " & Err.number & vbCrLf & vbCrLf & Err.Description & " Form_AfterUpdate()"
+   Resume Next
+    
+End Sub 'Form_AfterUpdate
+'выполнение проверки перед обновлением записи
+Private Sub Form_BeforeUpdate(Cancel As Integer)
 On Error GoTo ErrHandler
-'Static SubRst As Recordset, counter As Long
-Dim rst As DAO.Recordset
-Dim strSearchName As String, Response As Integer
+Dim Result As Integer, ID As Long
+Dim rst As Recordset
 
-    Set rst = subСкладUnnested.Form.Recordset
-    strSearchName = CStr(subСкладUnnested!Код_ТМЦ)
-    rst.FindFirst "Код_ТМЦ = " & strSearchName
-    If rst.NoMatch Then
-        MsgBox "Запись не найдена", vbInformation + vbOKOnly, strMsgBox
-    Else
-        Response = MsgBox("Выбрано для удаления: " & vbCrLf _
-                        & "Код ТМЦ: " & vbTab & rst.Fields(10) & vbCrLf _
-                        & "Дата регистрации в БД: " & vbTab & rst.Fields(0) & vbCrLf _
-                        & "Наименование: " & vbTab & rst.Fields(1) & vbCrLf _
-                        & "Тип: " & vbTab & rst.Fields(2) & vbCrLf _
-                        & "Инв. номер: " & vbTab & rst.Fields(3) & vbCrLf _
-                        & "Зав. номер: " & vbTab & rst.Fields(4) & vbCrLf _
-                        & "Количество: " & vbTab & rst.Fields(5) & vbCrLf _
-                        & "Откуда: " & vbTab & rst.Fields(6) & vbCrLf _
-                        & "Куда: " & vbTab & rst.Fields(7) & vbCrLf _
-                        & "Основание: " & vbTab & rst.Fields(8) & vbCrLf _
-                        & "Состояние: " & vbTab & rst.Fields(9) & vbCrLf & vbCrLf _
-                        & "Удалить окончательно?", vbExclamation + vbOKCancel, strMsgBox)
-        If Response = vbOK Then
-            ' удаление ТМЦ из базы
-            CurrentDb.Execute "DELETE * FROM Тип_Наличие WHERE " _
-                             & "Тип_Наличие.Код_ТМЦ =" & strSearchName & ";"
-            ' удаление истории движения ТМЦ
-            CurrentDb.Execute "DELETE * FROM history_records WHERE " _
-                             & "history_records.Код_ТМЦ =" & strSearchName & ";"
-            MsgBox "Удаление произведено.", vbInformation + vbOKOnly, strMsgBox
+    ' условие что это перемещение не типа "структура - буфер"
+    If Not (rl.insOutRelocation) Then
+        'проверка свойства, что назначение - это "позиция"
+        If rl.isItPosition(hidedTextBox.value) Then
+            'проверка занятости позиции прибором
+            If rl.busyPosition Then
+                MsgBox "Позиция занята", , strMsgBox
+                Cancel = True
+                Exit Sub
+            End If
+        End If
+       
+        'проверка свойства, что назначение - это "место хранения"
+        If rl.isItStore(hidedTextBox.value) Then
+        End If
+    
+        'проверка свойства, что назначение - это "использованные ТМЦ"
+        If rl.isItUsed_Store(hidedTextBox.value) Then
+        End If
+       
+        'проверка свойства, что назначение - это не "место хранения", "использованные ТМЦ" или "позиция"
+        If Not (rl.toPosition Or rl.toStore Or rl.toUsed_Store) Then
+            MsgBox "Не позиция, не склад и не использованные", , strMsgBox
+            Cancel = True
+            Exit Sub
         End If
         
+        If Not rl.outRelocation Then
+            ID = Код_ТМЦ.value
+            Set rst = CurrentDb.OpenRecordset("SELECT structure_id FROM " _
+                                            & "Тип_Наличие WHERE " _
+                                            & "Тип_Наличие.Код_ТМЦ = " & ID & ";")
+            rst.MoveFirst
+            If auth.getId <> getDesiredSubdivCode(rst.Fields(0)) Then
+                ' закрыть источник данных
+                rst.Close
+                MsgBox "При авторизации в базе данных вами указан другой филиал." & vbCrLf _
+                   & "Возможная причина появления этого сообщения:" & vbCrLf _
+                   & "1. Вы хотите переместить ТМЦ из другого филиала" & vbCrLf _
+                   & "2. Вы хотите переместить ТМЦ в другой филиал" & vbCrLf _
+                   & "Перемещение ТМЦ между филиалами производятся " & vbCrLf _
+                   & "только через буфер обмена приборов" & vbCrLf _
+                   & "Операция будет отменена", vbExclamation + vbOKOnly, strMsgBox
+                 Cancel = True
+                 Me.Undo
+                 Exit Sub
+            End If
+        End If
+            
+        'проверка условия, что выбранный филиал не тот, под которым пользователь авторизован
+        If auth.getId <> getDesiredSubdivCode(hidedTextBox.value) Then
+           MsgBox "При авторизации в базе данных вами указан другой филиал." & vbCrLf _
+              & "Возможная причина появления этого сообщения:" & vbCrLf _
+              & "1. Вы хотите переместить ТМЦ из другого филиала" & vbCrLf _
+              & "2. Вы хотите переместить ТМЦ в другой филиал" & vbCrLf _
+              & "Перемещение ТМЦ между филиалами производятся " & vbCrLf _
+              & "только через буфер обмена приборов" & vbCrLf _
+              & "Операция будет отменена", vbExclamation + vbOKOnly, strMsgBox
+            Cancel = True
+            Me.Undo
+            Exit Sub
+        End If
+    Else ' если это перемещение типа "структура - буфер"
+        structure_idTextBox.SetFocus
+        structure_idTextBox.Text = ""
+        targetRelocChanged = True
     End If
-
-   'обновить подчиненную форму буфера приборов после операций с базой данных
-   Me.subСкладUnnested.Requery
-   rst.MoveFirst
-
-Exit Sub
-ErrHandler:
-   MsgBox Err.Description, , strMsgBox
-End Sub 'deleteFromBufferButton_Click
-
-'удаление узла из дерева
-Private Sub deleteNodeButton_Click()
-
-End Sub 'deleteNodeButton_Click
-'нажатие кнопки Редактирование карточки ТМЦ
-Private Sub editRecordButton_Click()
-
-   DoCmd.OpenForm "EditForm", , , , , acDialog
-   Me.Requery
-   
-End Sub 'editRecordButton_Click()
-
-'закрытие формы - выход из приложения
-Private Sub Form_Close()
-Dim Noth As Variant
-
-   'отметка окончания сессии идентифицированного пользователя
-   Noth = session.setSessionEnd(auth.getSubdiv, auth.getLogin)
-   DoCmd.Close acForm, "Authorization"
-   'Application.Quit acQuitSaveAll
-
-End Sub 'Form_Close
-
-
-'загрузка формы
-Private Sub Form_Load()
-Dim rst As Recordset
-Dim meRst As Recordset
-Dim Noth As Variant
       
-   'конструктор нового экземпляра класса clsTreeClass заполнения и работы с деревом
-   Set tr = New clsTreeClass
-   'инициализация контрола ТриВью на форме
-   Set tr.Tree = Me.TrView.Object
-   'использование методов класса clsTreeClass для инициализации переменных описывающих таблицу структуры дерева
-   tr.Tbl = "Структура"
-   tr.fldKey = "Код"
-   tr.fldParent = "parent_id"
-   tr.fldText = "Наименование"
-   'заполнение дерева
-   tr.GenerateTree
-   
-   'инициализация переменной Recordset и присвоение ей набора записей подчиненной формы (буфера ТМЦ)
-   Set rst = subСкладUnnested.Form.Recordset
-   'проверка условия, что в подчиненной форме (буфере ТМЦ) имеются записи
-   If rst.BOF = False And rst.EOF = False Then
-      relocateUnnestedButton.Enabled = True 'активировать кнопку перемещения ТМЦ из буфера
-      'populate the recordset
-      rst.MoveLast
-      rst.MoveFirst
+   If (targetRelocChanged = False) Or (Куда_израсход_Код.Enabled = False) Then
+      Cancel = True
+      MsgBox "Не менялось поле 'Куда перемещено'", vbCritical, strMsgBox
    End If
    
+   If Cancel = False Then
+      Result = MsgBox("Производится запись заданных аттрибутов в базу. Отмена изменений будет невозможна. Продолжить?", vbInformation + vbOKCancel + vbDefaultButton1, strMsgBox)
+      If Result = 2 Then
+         Cancel = True
+         Me.Undo
+         Exit Sub
+         'fromPlaceLabel.Caption = "Откуда перемещено"
+         '***********************************************************************
+         'relocationDateTextBox.SetFocus 'отвлечение внимания от поля Куда израсх
+                                          'для измения св-в этого эл-та управления
+         'If Куда_израсход_Код.Locked = False Then
+         '   Куда_израсход_Код.Locked = True
+         'End If
+         
+         'If Куда_израсход_Код.Enabled = True Then
+         '   Куда_израсход_Код.Enabled = False
+         'End If
+         '***********************************************************************
+      End If
+   End If
    
-   'инициализация нового экземпляра класса, описывающего виды перемещений ТМЦ
-   Set rl = New clsRelocateClass
+   'вставка строки в таблицу history_records, используя значения _
+   из переменных хранения данных для исторической записи
+   CurrentDb.Execute " INSERT INTO history_records(relocation_date,Куда_израсход_Код, " _
+                     & "Инициалы,state_id,class_id,session_id,reason_id,Код_ТМЦ ) VALUES " _
+                     & "('" & rDate & "','" _
+                     & bRplace_id & "','" _
+                     & brPersonal & "','" _
+                     & bRstate_id & "','" _
+                     & bCclass_id & "','" _
+                     & bRsession_id & "','" _
+                     & bRreason_id & "','" _
+                     & Код_ТМЦ & " ' );"
    
-   'инициализация метки статуса на форме просмотра ТМЦ
-   statusLabel.Caption = "Вывод ТМЦ всего дерева филиалов и организаций"
-   
-   'инициализация нового экземпляра класса, идентифицирующего сессии работы с БД
-   Set session = New clsSessionsClass
-   
-   ' инициализация нового экз. класса clsSelectRecordClass, описывающего
-   ' методы и свойства процедур редактирования аттрибутов и выбора ТМЦ
-   Set sr = New clsSelectRecordClass
-   
-   '"популяризация" источника данных формы
-   Set meRst = Me.Recordset
-   meRst.MoveLast
-   meRst.MoveFirst
-   
-   'отметка начала запущенной сессии и идентификации пользователя
-   Noth = session.setSessionBegin(auth.getSubdiv, auth.getLogin)
-            
-End Sub 'Form_Load
-' нажатие кнопки "свойства принтера"
-Private Sub getPaperListButton_Click()
+   relocNumberTextBox.SetFocus
+   If Val(relocNumberTextBox.Text) = 1 Then
+      rlNumber = 1
+   Else
+      'вызвать процедуру множественной вставки в БД bRreason_id
+      Call UpdateRecords
+      'подготовка поля Количество к завершению выполнения процедуры вставки
+      'т.к. при вызове UpdateRecords (Количество-1) ТМЦ были вставлены в БД
+      'relocNumberTextBox.SetFocus
+      'relocNumberTextBox.Locked = False
+      'relocNumberTextBox.Text = "1"
+      'relocNumberTextBox.Locked = True
+      
+   End If
+      
+Exit Sub
+ErrHandler:
+   MsgBox "Error #: " & Err.number & vbCrLf & vbCrLf & Err.Description
+   Me.Undo
+   Resume Next
 
-   ' вывести все доступные принтеры в сообщении
-   Call ShowPrinters
-   ' вывести принтер по умолчанию и типы бумаги, которые он поддерживает
-   Call GetPaperList
+End Sub 'Form_BeforeUpdate
 
-End Sub ' getPaperListButton_Click
-
-'обработка нажатия кнопки на добавление всех путей из дерева структуры в таблицы "Куда_израсход" и
-' "Откуда_перемещ"
-Private Sub insertPathsButton_Click()
+'загрузка формы Перемещение
+Private Sub Form_Load()
 On Error GoTo ErrHandler
-Dim rsMaster As Recordset, rsSlave As Recordset
-Dim i As Integer, ID As Long, pathStr As String
-Dim pathArray(14) As String
- 
-   Set rsMaster = CurrentDb.OpenRecordset("SELECT Код FROM Структура")
    
-   Do Until rsMaster.EOF
-      Call arrayInitilize(pathArray)
-      i = 0
-      ID = rsMaster("Код")
-                 
-      Do
-         Set rsSlave = CurrentDb.OpenRecordset("SELECT Перевод,parent_id FROM Структура " _
-              & " WHERE Код = " _
-              & ID & "")
-         ID = rsSlave("parent_id")
-         pathArray(i) = rsSlave("Перевод")
-         i = i + 1
-      Loop While ID > 0
-      rsSlave.Close
-      
-      i = 14
-      pathStr = ""
-      Do
-         If pathArray(i) = "" Then
-         Else
-            If pathStr = "" Then
-               pathStr = pathArray(i)
-            Else
-               pathStr = pathStr & ", " & pathArray(i)
-            End If
-         End If
-            i = i - 1
-      Loop While i >= 0
-      CurrentDb.Execute " INSERT INTO Куда_израсход ( F27 ) VALUES " _
-                      & " ('" & pathStr & "');"
-      CurrentDb.Execute " INSERT INTO Откуда_перемещ ( F27 ) VALUES " _
-                      & " ('" & pathStr & "');"
-      rsMaster.MoveNext
-   Loop
-
-   'очистка
-   rsMaster.Close
-   rsSlave.Close
-      
+   Me.TimerInterval = 1000
+   If Not (rl.insOutRelocation) Then
+      'инициализация метки подсказки
+      TreeViewNotesLabel.Caption = "* Подсказка: нажмите 'Начало перемещения' " _
+         & " В открывшейся форме заполните все поля." _
+         & " Затем можно будет выбрать назначение в дереве структуры."
+   
+      'Инициализация дерева структуры
+      Set tr = New clsTreeClass
+      Set tr.Tree = Me.TrView.Object
+      tr.Tbl = "Структура"
+      tr.fldKey = "Код"
+      tr.fldParent = "parent_id"
+      tr.fldText = "Наименование"
+      tr.GenerateTree
+   Else
+      TrView.Enabled = False
+      'инициализация метки подсказки
+      TreeViewNotesLabel.Caption = "* Подсказка: нажмите 'Начало перемещения' " _
+         & " В открывшейся форме заполните все поля." _
+         & " Затем проведите запись информации о перемещении в базу данных."
+   End If
+   
+   Me.RecordSource = queryString
+   'создаем новый объект Recordset, содержащий все записи запускаемой формы
+   ' инициализация переменной для хранения количества перемещенных ТМЦ (обнуляется после успешного перемещения)
+   rlNumber = 0
+         
 Exit Sub
 ErrHandler:
    MsgBox Err.Description
-End Sub 'insertPathsButton_Click
+End Sub 'Form_Load
+'процедура обработки события по таймеру - реализована простая анимация метки подсказки
+Private Sub Form_Timer()
+Static ShowLabel As Boolean, counter As Integer
+    
+    If counter > 10 Then
+      Me.TimerInterval = 0
+    Else
+      If ShowLabel Then
+          ' показать метку подсказки.
+          TreeViewNotesLabel.BackColor = -2147483623
+      Else
+          ' Не показывать метку подсказки.
+          TreeViewNotesLabel.BackColor = -2147483624
+      End If
+      ShowLabel = Not ShowLabel
+      counter = counter + 1
+   End If
+ 
+End Sub 'Form_Timer
+
+'обработка нажатия "Esc"
+Private Sub Form_Undo(Cancel As Integer)
+   
+   cancelUpdateQwr = False
+   relocNumberTextBox.SetFocus
+   relocNumberTextBox.Locked = False
+   relocNumberTextBox.Text = ""
+   relocNumberTextBox.Locked = True
+   relocationDateTextBox.SetFocus 'отвлечение внимания от поля Куда израсх _
+                                    для измения св-в этого эл-та управления
+   If Куда_израсход_Код.Locked = False Then
+      Куда_израсход_Код.Locked = True
+   End If
+   
+   If Куда_израсход_Код.Enabled = True Then
+      Куда_израсход_Код.Enabled = False
+   End If
+   
+End Sub 'Form_Undo
+
+'обработка нажатия кнопки справочника примечаний
+Private Sub openNotesGlossarybutton_Click()
+
+   DoCmd.OpenForm FormName:="NotesGlossary", WindowMode:=acDialog
+   
+   Примечание_Код.Requery
+   Me.Requery
+
+End Sub 'openNotesGlossarybutton_Click
+
+'обработка нажатия кнопки справочника применений ТМЦ
+Private Sub OpenUseGlossary_Click()
+
+   DoCmd.OpenForm FormName:="UseGlossary", WindowMode:=acDialog
+   
+   Куда_израсход_Код.Requery
+   Me.Requery
+
+End Sub 'OpenUseGlossary_Click
+
+Private Sub Form_Unload(Cancel As Integer)
+
+   'установка свойст класса Перемещение в исходные значения
+   rl.outRelocation = False
+   rl.inRelocation = False
+   rl.insOutRelocation = False
+   rl.toPosition = False
+   rl.toStore = False
+   
+End Sub
+
+'нажатие кнопки "Начало перемещения.."
+Private Sub relocateButton_Click()
+On Error GoTo ErrHandler
+Dim rs As Recordset
+Dim rsS As Recordset 'для определения кодов переменных (из таблиц classes, states, Куда_израсход, sessions), _
+                      входящих в историческую запись таблицы history_records
+Dim bookmark As Variant
+Dim str As String ' строковая переменная для копирования значения поля Местонахождение
+                  ' в поле Откуда перемещено
+   
+   'выбор данных для истор. записи, запоминание данных для истор. записи в переменных
+   relocationDateTextBox.SetFocus
+   relocationDateTextBox.Locked = False
+   If relocationDateTextBox.Text <> "" Then
+      rDate = CDate(relocationDateTextBox.Text)
+   Else
+   End If
+   relocationDateTextBox.Locked = True
+   
+   placeTextBox.SetFocus
+   placeTextBox.Locked = False
+   someStr = placeTextBox.Text
+   placeTextBox.Locked = True
+   'запрос bRplace_id
+   Set rsS = CurrentDb.OpenRecordset("SELECT Код FROM Куда_израсход " _
+                                   & "WHERE F27 = '" & someStr & "'")
+   If rsS.RecordCount = 1 Then
+      bRplace_id = rsS.Fields(0)
+   Else
+      MsgBox "Текущее Местонахождение отсутствует или неуникально. Ошибка запроса к таблице." _
+             & " Обратитесь к администратору базы данных.", vbExclamation, strMsgBox
+      rsS.Close
+      Exit Sub
+   End If
+   rsS.Close
+      
+   personalTextBox.SetFocus
+   personalTextBox.Locked = False
+   brPersonal = personalTextBox.Text
+   personalTextBox.Locked = True
+   
+   stateComboBox.SetFocus
+   stateComboBox.Locked = False
+   someStr = stateComboBox.Text
+   stateComboBox.Locked = True
+   'запрос bRstate_id
+   Set rsS = CurrentDb.OpenRecordset("SELECT state_id FROM states " _
+                                   & "WHERE state = '" & someStr & "'")
+   If rsS.RecordCount = 1 Then
+      bRstate_id = rsS.Fields(0)
+   Else
+      MsgBox "Текущее Состояние отсутствует или неуникально. Ошибка запроса к таблице." _
+             & " Обратитесь к администратору базы данных.", vbExclamation, strMsgBox
+      rsS.Close
+      Exit Sub
+   End If
+   rsS.Close
+     
+   classTextBox.SetFocus
+   classTextBox.Locked = False
+   someStr = classTextBox.Text
+   classTextBox.Locked = True
+   'запрос bCclass_id
+   Set rsS = CurrentDb.OpenRecordset("SELECT class_id FROM classes " _
+                                   & "WHERE class_name = '" & someStr & "'")
+   If rsS.RecordCount = 1 Then
+      bCclass_id = rsS.Fields(0)
+   Else
+      MsgBox "Текущий класс ТМЦ отсутствует или неуникален. Ошибка запроса к таблице." _
+             & " Обратитесь к администратору базы данных.", vbExclamation, strMsgBox
+      rsS.Close
+      Exit Sub
+   End If
+   rsS.Close
+   
+   reasonComboBox.SetFocus
+   reasonComboBox.Locked = False
+   someStr = reasonComboBox.Text
+   reasonComboBox.Locked = True
+   'запрос bRreason_id
+   Set rsS = CurrentDb.OpenRecordset("SELECT reason_id FROM reasons " _
+                                   & "WHERE reason = '" & someStr & "'")
+   If rsS.RecordCount = 1 Then
+      bRreason_id = rsS.Fields(0)
+   Else
+      MsgBox "Текущее основание перемещения отсутствует или неуникально. Ошибка запроса к таблице." _
+             & " Обратитесь к администратору базы данных.", vbExclamation, strMsgBox
+      rsS.Close
+      Exit Sub
+   End If
+   rsS.Close
+                                   
+   Set rsS = CurrentDb.OpenRecordset("SELECT session_id" _
+                                   & " FROM sessions " _
+                                   & " WHERE subdivision Like '" _
+                                   & auth.getSubdiv & "' " _
+                                   & " AND user_name Like '" _
+                                   & auth.getLogin & "' " _
+                                   & " AND state Like " _
+                                   & "'открыта'" _
+                                   & " AND host_name Like '*" _
+                                   & GetThisComputerName & "*'" _
+                                   & " ORDER BY sessions.session_id")
+   rsS.MoveLast
+   bRsession_id = rsS.Fields(0)
+   rsS.Close
+      
+   Set rs = Me.Recordset
+   bookmark = rs.bookmark
+   'populate the Recordset
+   rs.MoveLast
+   'инициализируем счетчик количества записей формы - глобальную переменную
+   rl.recsCount = rs.RecordCount
+   rs.bookmark = bookmark
+   
+   DoCmd.OpenForm "RelocateForm", WindowMode:=acDialog
+   
+   'если предыдущие данные с формы Сбора параметров о перемещении получены все
+   'тогда разблокируем поле ввода места назначения "Куда перемещено"
+   If cancelUpdateQwr = False Then
+      Куда_израсход_Код.Enabled = True
+      Куда_израсход_Код.Locked = True
+      If Not rl.insOutRelocation Then
+      Else
+         Me.placeTextBox.SetFocus
+         str = Me.placeTextBox.Text
+         Me.Местонахождение.SetFocus
+         Me.Местонахождение.Locked = False
+         Me.Местонахождение.Text = str
+         Me.Местонахождение.Locked = True
+         Me.Куда_израсход_Код.SetFocus
+         Куда_израсход_Код.Locked = False
+         Куда_израсход_Код.Text = "буфер приборов"
+         rlStr = "буфер приборов"
+         Куда_израсход_Код.Locked = True
+      End If
+      Куда_израсход_Код.SetFocus
+
+      ' деактивируем кнопку "Начало перемещения"
+      Me.relocateButton.Enabled = False
+   Else
+      Me.Undo
+      'если идет одновременная работа, то число записей меняется и нужно обновлять объект
+      Me.Requery
+   End If
+   
+Exit Sub
+ErrHandler:
+   MsgBox "Ошибка #: " & Err.number & vbCrLf & vbCrLf & Err.Description & " в процедуре Private Sub relocateButton_Click формы UpdateСклад"
+   Resume Next
+End Sub 'relocateButton_Click
+' нажатие кн. Сохранить
+Private Sub saveButton_Click()
+
+   Me.Refresh
+   
+End Sub ' saveButton_Click
+
+'обработка кликов мышкой на дереве структуры
+Private Sub TrView_Click()
+On Error GoTo ErrHandler
+Dim rs As Recordset
+Dim i As Integer, ID As Long, pathStr As String, oldPathStr As String
+Dim pathArray(14) As String
+
+   'запись индекса выбранного узла в скрытом поле на форме
+   hidedTextBox.value = tr.GetKey
+   ID = hidedTextBox.value
+      
+   i = 0
+   Call arrayInitilize(pathArray)
+   Do
+      Set rs = CurrentDb.OpenRecordset("SELECT Перевод,parent_id FROM Структура " _
+           & " WHERE Код = " _
+           & ID & "")
+      ID = rs("parent_id")
+      pathArray(i) = rs("Перевод")
+      i = i + 1
+   Loop While ID > 0
+   
+   i = 14
+   
+   Куда_израсход_Код.SetFocus
+   pathStr = ""
+   Do
+      If pathArray(i) = "" Then
+      Else
+         If pathStr = "" Then
+            pathStr = pathArray(i)
+         Else
+            pathStr = pathStr & ", " & pathArray(i)
+         End If
+      End If
+         i = i - 1
+   Loop While i >= 0
+   
+   Куда_израсход_Код.Locked = False
+   'сохраняем текстовое название предыдущего местонахождения прибора в переменную
+   oldPathStr = Куда_израсход_Код.Text
+   'записываем в поле Куда_израсход_Код текстовое название нового местонахождения
+   Куда_израсход_Код.Text = pathStr
+   rlStr = pathStr
+   targetRelocChanged = True
+   Куда_израсход_Код.Locked = True
+   
+   If clickCounter <> 0 Then
+   Else           'случай совершения первого клика по дереву структуры
+      Местонахождение.SetFocus
+      Местонахождение.Locked = False
+      'записываем в поле с меткой "Откуда перемещается" переменную с текстом предыдущего местонахождения
+      Местонахождение.Text = oldPathStr
+      Местонахождение.Locked = True
+      'fromPlaceLabel.Caption = "Откуда перемещается"
+      clickCounter = clickCounter + 1
+   End If
+   'фокусируемся на скрытом поле
+   hidedTextBox.SetFocus
+   'записываем его текущее значение - индекс, соответствующий текущему узлу структуры в переменную
+   ID = Val(hidedTextBox.Text)
+   'записываем в текстовое поле значение индекса структуры
+   structure_idTextBox.SetFocus
+   structure_idTextBox.Text = ID
+   TrView.SetFocus
+   
+   'очистка
+   rs.Close
+   CurrentDb.Close
+   
+Exit Sub
+ErrHandler:
+   MsgBox Err.Description
+End Sub 'TrView_Click
+
+
+'обработка события "изменено содержание поля Куда израсходовано"
+Private Sub Куда_израсход_Код_Dirty(Cancel As Integer)
+   
+   targetRelocChanged = True
+   
+End Sub 'Куда_израсход_Код_Dirty
 
 'обнуление элементов массива, хранящего путь
 Private Sub arrayInitilize(wpathArray() As String)
@@ -282,354 +567,80 @@ Dim i As Integer
    Next i
    
 End Sub 'arrayInitilize
-'обработка нажатия кнопки запроса приборов в узле
-Private Sub nestedQueryButton_Click()
-On Error GoTo ErrHandler
-Dim strNewRecord As String
+
+'процедура обновления в БД множества записей (по значению поля Количество)
+Sub UpdateRecords()
+On Error GoTo ErrorHandler
+Dim dbs As DAO.Database
 Dim qdf As DAO.QueryDef
 Dim rst As DAO.Recordset
-Dim a As DAO.QueryDef
+Dim counter As Integer, recordsCounter As Long
+
+   Set dbs = CurrentDb
    
-   'обращаемся к скрытому полю формы, хранящему индекс текущего(со свойством Selected = True) узла
-   hidedTextBox.SetFocus
-   'проверка условия, что выбран какой-либо узел в дереве
-   If hidedTextBox.Text <> "" Then
-      'вызов ф-ии составления части строки запроса данных для выбранного узла
-      strNewRecord = qwrParamsStr(Val(hidedTextBox.Text))
-      'используем вычисленную часть строки в запросе с выборкой ТМЦ, лежащих в выбранном и дочерних узлах
-      strNewRecord = "SELECT * FROM Склад " _
-           & " WHERE " _
-           & strNewRecord & ""
-      ' проверяем условие, что объект SomeRecordsQuery уже существует
-      ' Такое возможно, если предыдущий запрос вернул не результат, а ошибку
-      ' (например, если предыдущий запрос был слишком сложным)
-      For Each a In CurrentDb.QueryDefs
-        If a.Name = "SomeRecordsQuery" Then
-            Debug.Print a.Name
-            CurrentDb.QueryDefs.Delete "SomeRecordsQuery"
-        End If
-        Debug.Print a.Name
-      Next
-            
-      Set qdf = CurrentDb.CreateQueryDef("SomeRecordsQuery")
-      qdf.SQL = strNewRecord
-      'открываем набор данных, имеющих отношение к выбранному и дочерним узлам
-      Set rst = qdf.OpenRecordset()
-      If rst.BOF Or rst.EOF Then
-         Me.RecordSource = "nullQuery"   'если запрос не вернул данных, выводим пустые поля
-      Else
-         Me.RecordSource = strNewRecord 'либо - выводим результат запроса
-      End If
+   Set qdf = dbs.CreateQueryDef("UpdateRecordsQuery")
+   qdf.SQL = Me.RecordSource
+               
+   Set rst = qdf.OpenRecordset()
    
-      'Очистка базы данных
-      CurrentDb.QueryDefs.Delete "SomeRecordsQuery"
-      rst.Close
-      qdf.Close
-      CurrentDb.Close
-      
-      'фокусируемся на дереве
-      TrView.SetFocus
-   Else
-      MsgBox "Не выбран ни один узел дерева структуры!", vbExclamation, strMsgBox
-      Exit Sub
-   End If
-     
-   'инициализация метки статуса на форме просмотра ТМЦ
-   statusLabel.Caption = "Вывод ТМЦ выделенного узла дерева и вложенных в нем узлов"
-   
-Exit Sub
-'обработчик ошибок
-ErrHandler:
-   MsgBox Err.Description
-End Sub 'nestedQueryButton_Click
-
-'обработка нажатия кнопки справочника наименований
-Private Sub OpenNamesGlossaryButton_Click()
-
-   DoCmd.OpenForm FormName:="NamesGlossary", datamode:=acFormReadOnly, WindowMode:=acDialog
-   
-End Sub 'OpenNamesGlossaryButton_Click
-'обработка нажатия кнопки справочника типов
-Private Sub openTypesGlossarybutton_Click()
-
-   DoCmd.OpenForm FormName:="TypesGlossary", datamode:=acFormReadOnly, WindowMode:=acDialog
-
-End Sub 'openTypesGlossarybutton_Click
-'нажатие кнопки Печать отчета ЗИП АСУ
-Private Sub printAsuReportButton_Click()
-   
-   If enabPrinting Then
-      DoCmd.OpenReport "AsuReport", acViewNormal
-   End If
-
-End Sub 'printAsuReportButton_Click
-'нажатие "Печатать матер. пропуск"
-Private Sub printPassBlankButton_Click()
-
-   If enabPrinting Then
-      DoCmd.OpenReport "passblankReport"
-   End If
-
-End Sub 'printPassBlankButton_Click
-
-'переместить текущее ТМЦ в пределах структуры
-Private Sub relocateButton_Click()
-
-   'метод Inside - перемещение структура - структура
-   rl.Inside
-   rl.inRelocation = True
-   DoCmd.OpenForm "UpdateСклад", , , , , acDialog
-   Me.Requery
-
-End Sub 'relocateButton_Click
-'нажатие кнопки перемещения ТМЦ из структуры в буфер приборов
-Private Sub relocateToBufButton_Click()
-
-   'метод InsideOute - перемещение структура - буфер
-   rl.InsideOut
-   rl.insOutRelocation = True
-   DoCmd.OpenForm "UpdateСклад", , , , , acDialog
-   Me.Requery
-   Me.subСкладUnnested.Requery
-
-End Sub 'relocateToBufButton_Click
-
-'нажатие кнопки перемещения ТМЦ из буфера приборов в структуру
-Private Sub relocateUnnestedButton_Click()
-On Error GoTo ErrHandler
-Static SubRst As Recordset, counter As Long
-   
-   Set SubRst = subСкладUnnested.Form.Recordset
-   'метод Outside - перемещение буфер - структура (для новых или перемещаемых между филиалами ТМЦ)
-   queryString = rl.Outside(SubRst)
-   rl.outRelocation = True
-   DoCmd.OpenForm "UpdateСклад", , , , , acDialog
-
-   'обновить подчиненную форму буфера приборов после перемещения оттуда
-   Me.subСкладUnnested.Requery
-   SubRst.MoveFirst
-
-Exit Sub
-ErrHandler:
-   MsgBox Err.Description
-
-End Sub 'relocateUnnestedButton_Click
-
-'кнопка вывода отчета по складу в Ексель
-Private Sub reportSkladToExcelbutton_Click()
-On Error GoTo ErrorHandler
-
-   'подготовить отчет на основе шаблона из запроса Warehouse
-   'создать таблицу-копию отчета по складу
-   Call CreateTable(PrepareWarehouseReport)
-   'экспорт Отчета в XML-файл
-   Application.ExportXML acExportTable, "Отчет по Складу", _
-      "Отчет по Складу.xml", "Отчет по Складу.xsd"
-      
-   'удалить таблицу-копию отчета по складу
-   CurrentDb.Execute "DROP TABLE [Отчет по Складу];"
-
-   'вызов процедуры работы с XML-файлом отчета
-   Call WorkWithXML
-   
-   Kill "Отчет по Складу.xml"
-   Kill "Отчет по Складу.xsd"
-   
-   MsgBox "Перечень складских ТМЦ выведен в файл: Мои документы\" & _
-      "Отчет по Складу на " & CStr(Date) & ".xlsx", vbInformation + vbOKOnly, strMsgBox
-
-   'DoCmd.OutputTo acOutputQuery, "Отчет по складу", acFormatXLSX, _
-   '   "Отчет по Складу на " & CStr(Date) & ".xlsx"
-   'MsgBox "Перечень складских ТМЦ выведен в файл: Мои документы\" & _
-   '   "Отчет по Складу на " & CStr(Date) & ".xlsx"
-Exit Sub
-
-ErrorHandler:
-   MsgBox "Ошибка #: " & Err.number & vbCrLf & vbCrLf & Err.Description
-   'If Err.number <> 1004 Then
-   '   MsgBox "Произошла ошибка доступа к файлу!"
-   'End If
-End Sub 'reportSkladToExcelbutton_Click
-'нажатие кнопки Отчет АСУ в PDF
-Private Sub saveAsuReportAsPdfButton_Click()
-On Error GoTo ErrorHandler
-
-   DoCmd.OutputTo acOutputReport, "AsuReport", _
-      acFormatPDF, "ЗИП и склад ТМЦ АСУ" & CStr(Date) & ".pdf", True
-   MsgBox "Бланк выведен в 'Мои документы/ЗИП и склад ТМЦ АСУ" & CStr(Date) & ".pdf'", vbInformation + vbOKOnly, strMsgBox
-   
-Exit Sub
-
-ErrorHandler:
-   MsgBox "Ошибка #: " & Err.number & vbCrLf & vbCrLf & Err.Description
-   If Err.number = 31036 Then
-      MsgBox "Произошла ошибка вывода в файл. Возможно не устанолен компонент экспорта в Adobe", vbCritical + vbOKOnly, strMsgBox
-   End If
-   Exit Sub
-
-End Sub 'saveAsuReportAsPdfButton_Click
-
-'клик на узле дерева структуры предприятий
-Private Sub TrView_Click()
-   
-   'запись индекса выбранного узла в скрытом поле на форме
-   hidedTextBox.value = tr.GetKey
-   
-End Sub 'TrView_Click
-
-'Создание объекта Excel и открытие в нем экспортированного xml файла "Отчет по складу"
-Sub WorkWithXML()
-On Error GoTo ErrorHandler
-
-Dim objExcel As Excel.Application
-Dim objWS As Excel.Worksheet
-
-   Set objExcel = New Excel.Application
-   'objExcel.Workbooks.Add
-   'Set objWS = objExcel.ActiveSheet
-   
-   objExcel.Workbooks.OpenXML _
-      fileName:="Отчет по Складу.xml", _
-      LoadOption:=xlXmlLoadImportToList
-   objExcel.ActiveSheet.Name = "Отчет по складу"
-   objExcel.ActiveWorkbook.SaveAs "Отчет по Складу на " & CStr(Date) & ".xlsx"
-        
-   objExcel.Quit
-   
-Exit Sub
-
-ErrorHandler:
-   If Err.number <> 1004 Then
-      MsgBox "Ошибка #: " & Err.number & vbCrLf & vbCrLf & Err.Description
-      MsgBox "Произошла ошибка сохранения или вывода в файл! ", vbCritical + vbOKOnly, strMsgBox
-   End If
-Exit Sub
-  
-End Sub 'WorkWithXML
-
-'процедура создания таблицы-копии отчета по складу "Warehouse"
-Private Sub CreateTable(whrCls As String)
-
-    CurrentDb.Execute "CREATE TABLE [Отчет по складу] " _
-               & "([Дата получения] DATETIME, Наименование TEXT, " _
-               & "[Тип, марка] TEXT, " _
-               & "[Инв номер] TEXT, " _
-               & "[Зав номер] TEXT, " _
-               & "[Диапазон, типоразмер] TEXT, " _
-               & "[Состояние] TEXT, " _
-               & "[Кол-во на отчетную дату] LONG, " _
-               & "Местонахождение TEXT, " _
-               & "Примечание TEXT );"
-
-   CurrentDb.Execute "INSERT INTO [Отчет по складу] " _
-               & "SELECT Warehouse.[Дата получения],Warehouse.Наименование," _
-               & "Warehouse.[Тип, марка],Warehouse.[Инв номер],Warehouse.[Зав номер], " _
-               & "Warehouse.[Диапазон, типоразмер],Warehouse.[Кол-во на отчетную дату]," _
-               & "Warehouse.Местонахождение,Warehouse.Состояние,Warehouse.Примечание  " _
-               & "FROM Warehouse  " _
-               & "WHERE " & whrCls & ";"
-        
-End Sub 'CreateTable
-
-
-'обновить содержимое буфера приборов
-Private Sub unnestedQueryButton_Click()
-   
-   Me.subСкладUnnested.Requery
-   
-End Sub 'unnestedQueryButton_Click(
-
-'нажатие кнопки вывода отчета по использованию - в Ексель
-Private Sub useReportButton_Click()
-'вывод отчета по использованию за последние 31 календарный день
-
-   'вывести запрос "UseReport" в Excel
-   DoCmd.OutputTo acOutputQuery, "UseReport", acFormatXLSX, _
-      "Отчет по использованию ТМЦ " & ".xlsx" 'за период с " & CStr(Date - 31) _
-      & " по " & CStr(Date) & ".xlsx"
-   MsgBox "Отчет по использованию выведен в файл: Мои документы\" & _
-   "Отчет по использованию ТМЦ " & ".xlsx", vbInformation + vbOKOnly, strMsgBox
-   'за период с " & CStr(Date - 31) _
-      & " по " & CStr(Date) & ".xlsx" ', vbInformation + vbOKOnly, strMsgBox
-
-End Sub 'useReportButton_Click
-'функция подготовки отчета по складу из шаблона запроса Warehouse
-Private Function PrepareWarehouseReport() As String
-Dim idsRst As Recordset, whrClause As String
-Dim enterCounter As Integer
-
-   'счетчик вхождений в ветвь "Да" блока if/else
-   enterCounter = 0
-   'вычисляемая строка
-   whrClause = "structure_id = "
-   'запрос всех кодов узлов структуры, отмеченных как места хранения
-   Set idsRst = CurrentDb.OpenRecordset("SELECT Код FROM Структура WHERE store = TRUE")
-   idsRst.MoveLast
-   idsRst.MoveFirst
-   Do Until idsRst.EOF
-      If IsItMyChild(idsRst.Fields(0)) Then
-         enterCounter = enterCounter + 1
-         'если не первое вхождение в эту ветвь блока if/else
-         If enterCounter <> 1 Then
-            whrClause = whrClause & " OR " & "structure_id = " & CStr(idsRst.Fields(0))
-         Else
-            whrClause = whrClause & CStr(idsRst.Fields(0))
-         End If
+   recordsCounter = 1
+   rst.MoveFirst
+   For counter = 1 To relocNumberTextBox.value
+      If recordsCounter <> Me.CurrentRecord Then
+         With rst
+            .Edit
+            '!Код_ТМЦ = auto
+            !Откуда_перемещ = Местонахождение
+            !Куда_израсход_Код = Куда_израсход_Код
+            !Когда_израсходовано = relocationDateTextBox
+            !Инициалы = personalTextBox
+            !Причины = reasonComboBox
+            !Состояние = stateComboBox
+            !Количество = 1
+            !notes = Примечание_Код
+            !structure_id = Me.structure_idTextBox
+            .Update
+         End With
+         rlNumber = rlNumber + 1
+         'вставка строки в таблицу history_records, используя значения _
+         из переменных хранения данных для исторической записи
+         CurrentDb.Execute " INSERT INTO history_records(relocation_date,Куда_израсход_Код, " _
+                            & "Инициалы,state_id,class_id,session_id,reason_id,Код_ТМЦ ) VALUES " _
+                            & "('" & rDate & "','" _
+                            & bRplace_id & "','" _
+                            & brPersonal & "','" _
+                            & bRstate_id & "','" _
+                            & bCclass_id & "','" _
+                            & bRsession_id & "','" _
+                            & bRreason_id & "','" _
+                            & rst.Fields(0) & " ' );"
       Else
       End If
-      idsRst.MoveNext
-   Loop
-   
-   'если в текущем филиале нет мест хранения _
-   'вывести пустой отчет
-   If enterCounter = 0 Then
-      whrClause = whrClause & "1"
-   End If
-   
-   'возврат вычисленной строки
-   PrepareWarehouseReport = whrClause
-    
-End Function 'PrepareWarehouseReport
+      rst.MoveNext
+      recordsCounter = recordsCounter + 1
+   Next counter
 
-'процедура определения, является ли переданный параметром код, _
-'кодом места хранения, принадлежащего активному филиалу
-Private Function IsItMyChild(ByVal ID As Long) As Boolean
+    ' увеличение переменной для хранения количества перемещенных ТМЦ на единицу (из-за особенностей
+    ' данного проекта одно ТМЦ всегда перемещается самой формой перемещения, так что если требуется
+    ' переместить N ТМЦ, то N-1 перемещается чисто программно при помощи кода VB, а 1 шт всегда пере-
+    ' мещается формой, так как форма основана на запросе Update, и при обновлении данных формы, они
+    ' обновляются в таблицах, на которых основан запрос Update)
+    rlNumber = rlNumber + 1
+   'Return database to original.
+   dbs.QueryDefs.Delete "UpdateRecordsQuery"
 
-   'если переданный id является дочерним узлом для текущего филиала
-   If auth.getId = getDesiredSubdivCode(ID) Then
-      IsItMyChild = True
-   Else
-      IsItMyChild = False
-   End If
-   
-End Function 'IsItMyChild2
-'нажатие кнопки "просмотреть бланк матер. пропуска"
-Private Sub viewPassBlankButton_Click()
+   rst.Close
+   qdf.Close
+   dbs.Close
 
-   DoCmd.OpenReport "passblankReport", acViewPreview, , , acDialog
+   Set rst = Nothing
+   Set qdf = Nothing
+   Set dbs = Nothing
 
-End Sub 'viewPassBlankButton_Click
-
-' нажатие кнопки "Отчет по сессиям работы"
-Private Sub viewSessionsButton_Click()
-On Error GoTo ErrorHandler
-Dim Response As Integer
-
-    DoCmd.OpenReport "sessionsReport", acViewReport, , , acDialog
-    Response = MsgBox("Следует ли вывести этот отчет в файл Acrobat Reader?", vbQuestion + vbYesNo, strMsgBox)
-    If Response = vbYes Then
-        DoCmd.OutputTo acOutputReport, "sessionsReport", _
-                       acFormatPDF, "Сессии" & CStr(Date) & ".pdf", True
-        MsgBox "Отчет выведен в 'Мои документы/Сессии" & CStr(Date) & ".pdf", vbInformation + vbOKOnly, strMsgBox
-    End If
-   
-Exit Sub
-
-ErrorHandler:
-   MsgBox "Ошибка #: " & Err.number & vbCrLf & vbCrLf & Err.Description
-   If Err.number = 31036 Then
-      MsgBox "Произошла ошибка вывода в файл. Возможно не устанолен компонент экспорта в Adobe", vbCritical + vbOKOnly, strMsgBox
-   End If
    Exit Sub
 
-End Sub 'viewSessionsButton_Click
+ErrorHandler:
+   MsgBox "Error #: " & Err.number & vbCrLf & vbCrLf & Err.Description
+   Resume Next
+End Sub 'InsertNumberOfRecordsIntoDB
+
