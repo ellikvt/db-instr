@@ -56,7 +56,9 @@ Commissioning and Start-Up Instrumentation managing Database project
 **2025-11-13 update:** Binary File 0.0.4 to be used (on the bug 4 fix)  
 **2025-11-14 update:** Binary File 0.0.5 to be used (on the bug 6 fix)  
 **2025-11-14 update:** Binary File 0.0.6 to be used (on the bug 11 fix)  
- **2025-11-16 update:** Versions updated as per tags assigned ( see git log )  
+**2025-11-16 update:** Versions updated as per tags assigned ( see git log )  
+**2025-11-16 update:** DB split performed since v0.2.5. This version to be taken and source file v0.2.5   
+for further development but only after test the simultaneous access.  
 
 `**bug 1:** fixed` Error 424 on click with 'Учетная карта ТМЦ' button of the Main View  
 `**bug 2:** fixed` Macro command Error on click with 'Открыть форму' button of the Main View  
