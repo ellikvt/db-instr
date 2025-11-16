@@ -56,7 +56,8 @@ Commissioning and Start-Up Instrumentation managing Database project
 **2025-11-13 update:** Binary File 0.0.4 to be used (on the bug 4 fix)  
 **2025-11-14 update:** Binary File 0.0.5 to be used (on the bug 6 fix)  
 **2025-11-14 update:** Binary File 0.0.6 to be used (on the bug 11 fix)  
- 
+ **2025-11-16 update:** Versions updated as per tags assigned ( see git log )  
+
 `**bug 1:** fixed` Error 424 on click with 'Учетная карта ТМЦ' button of the Main View  
 `**bug 2:** fixed` Macro command Error on click with 'Открыть форму' button of the Main View  
 ( fixed in Binary File 0.0.2-bugs-#1,9-fixed by removing button related not correct macro command )  
