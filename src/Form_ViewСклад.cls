@@ -26,7 +26,7 @@ End Sub 'addRecordButton_Click
 Private Sub allQueryButton_Click()
 Dim rst As Recordset
 
-   Me.RecordSource = "SELECT * FROM Склад "
+   Me.RecordSource = "SELECT * FROM cpyСклад "
    statusLabel.Caption = "Вывод ТМЦ всего дерева филиалов и организаций"
    '"популяризация" источника данных формы
    Set rst = Me.Recordset
@@ -301,7 +301,7 @@ Dim a As DAO.QueryDef
       'вызов ф-ии составления части строки запроса данных для выбранного узла
       strNewRecord = qwrParamsStr(Val(hidedTextBox.Text))
       'используем вычисленную часть строки в запросе с выборкой ТМЦ, лежащих в выбранном и дочерних узлах
-      strNewRecord = "SELECT * FROM Склад " _
+      strNewRecord = "SELECT * FROM cpyСклад " _
            & " WHERE " _
            & strNewRecord & ""
       ' проверяем условие, что объект SomeRecordsQuery уже существует
@@ -645,3 +645,5 @@ ErrorHandler:
    Exit Sub
 
 End Sub 'viewSessionsButton_Click
+
+

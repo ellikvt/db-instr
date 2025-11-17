@@ -88,7 +88,6 @@ Dim rst As Recordset
             If rl.busyPosition Then
                 MsgBox "Позиция занята", , strMsgBox
                 Cancel = True
-                Exit Sub
             End If
         End If
        
@@ -104,7 +103,6 @@ Dim rst As Recordset
         If Not (rl.toPosition Or rl.toStore Or rl.toUsed_Store) Then
             MsgBox "Не позиция, не склад и не использованные", , strMsgBox
             Cancel = True
-            Exit Sub
         End If
         
         If Not rl.outRelocation Then
@@ -125,7 +123,6 @@ Dim rst As Recordset
                    & "Операция будет отменена", vbExclamation + vbOKOnly, strMsgBox
                  Cancel = True
                  Me.Undo
-                 Exit Sub
             End If
         End If
             
@@ -140,7 +137,6 @@ Dim rst As Recordset
               & "Операция будет отменена", vbExclamation + vbOKOnly, strMsgBox
             Cancel = True
             Me.Undo
-            Exit Sub
         End If
     Else ' если это перемещение типа "структура - буфер"
         structure_idTextBox.SetFocus
@@ -158,7 +154,6 @@ Dim rst As Recordset
       If Result = 2 Then
          Cancel = True
          Me.Undo
-         Exit Sub
          'fromPlaceLabel.Caption = "Откуда перемещено"
          '***********************************************************************
          'relocationDateTextBox.SetFocus 'отвлечение внимания от поля Куда израсх
@@ -214,6 +209,7 @@ End Sub 'Form_BeforeUpdate
 Private Sub Form_Load()
 On Error GoTo ErrHandler
    
+   Me.saveButton.Enabled = False
    Me.TimerInterval = 1000
    If Not (rl.insOutRelocation) Then
       'инициализация метки подсказки
@@ -544,6 +540,8 @@ Dim pathArray(14) As String
    'очистка
    rs.Close
    CurrentDb.Close
+            
+   Me.saveButton.Enabled = True
    
 Exit Sub
 ErrHandler:
@@ -643,4 +641,6 @@ ErrorHandler:
    MsgBox "Error #: " & Err.number & vbCrLf & vbCrLf & Err.Description
    Resume Next
 End Sub 'InsertNumberOfRecordsIntoDB
+
+
 

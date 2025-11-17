@@ -95,5 +95,4 @@ This is basically not the bug as it appears but need to be corrected for full de
 **bug 12:** If TreeCtl accessed by clicking rigth after the Relocate Form data given to the app by user and no choice is made regarding the destination ot relocation ( no node clicked in TreeCtl ) then the app generating not proper reply that need to be corrected.  
 The button `Сохранить изменения` shall not be activated until proper destination node is selected by user.   
 **bug 13:** In the `History` Form based on `HistoryQuery` the field `Дата перемещения сюда` is not properly indicating the fact of relocation instead of field `Дата перемещения отсюда`  
-
-
+**bug 14:** It's required to change the Update Form controls and logic in order to achieve the better performance. On TrView selection the correctness of nodes choice to be checked instead of doing it inside Form_Before Update. Basically the Form_Update logic and this correctness check logic shall be one procedure or class for compactness. It'll save the user time during nodes choice by indicating him and assisting him if choice is correct. 
